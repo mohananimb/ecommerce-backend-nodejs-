@@ -53,8 +53,4 @@ router.post("/signin", async (req, res) => {
   }
 });
 
-router.get("/profile", auth, async (req, res) => {
-  res.status(200).send("HI");
-});
-
 module.exports = router;
