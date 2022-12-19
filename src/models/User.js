@@ -1,13 +1,13 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
-const validator = require("validator");
-const jwt = require("jsonwebtoken");
+const mongoose = require('mongoose')
+const bcrypt = require('bcrypt')
+const validator = require('validator')
+const jwt = require('jsonwebtoken')
 const userSchema = mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
-      trim: true,
+      trim: true
     },
 
     email: {
@@ -16,85 +16,102 @@ const userSchema = mongoose.Schema(
       trim: true,
       unique: true,
       lowercase: true,
-      validate(val) {
+      validate (val) {
         if (!validator.isEmail(val)) {
-          throw new Error("Invalid Email");
+          throw new Error('Invalid Email')
         }
-      },
+      }
     },
 
     mobile: {
       type: Number,
       required: true,
       trim: true,
-      validate(val) {
+      validate (val) {
         if (val.toString().length > 10) {
-          throw new Error("Invalid Phone");
+          throw new Error('Invalid Phone')
         }
-      },
+      }
     },
 
     password: {
       type: String,
       trim: true,
       minlength: 6,
-      maxLength: 20,
       required: true,
-      validate(val) {
-        if (val.toLowerCase().includes("password")) {
-          throw new Error("This password is not valid");
+      validate (val) {
+        if (val.toLowerCase().includes('password')) {
+          throw new Error('This password is not valid')
         }
-      },
+      }
     },
 
     role: {
       type: String,
-      enum: ["user", "admin"],
-      default: "user",
+      enum: ['user', 'admin'],
+      default: 'user'
     },
+
+    cartItems: [
+      {
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Product',
+          required: true
+        },
+        quantity: {
+          type: Number,
+          default: 1
+        },
+        price: {
+          type: Number,
+          required: true
+        }
+      }
+    ],
 
     profileImg: {
-      type: String,
-    },
+      type: String
+    }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
-);
+)
 
 userSchema.methods.passwordCheck = async function (password) {
-  const user = this;
-  const isMatch = await bcrypt.compare(password, user.password);
+  const user = this
+  const isMatch = await bcrypt.compare(password, user.password)
   if (!isMatch) {
-    return false;
+    return false
   }
 
-  return user;
-};
+  return user
+}
 
 userSchema.methods.generateToken = async function () {
-  const user = this;
+  const user = this
   const token = await jwt.sign(
     {
-      _id: user._id.toString(),
+      _id: user._id.toString()
     },
     process.env.JWT_STRING,
-    { expiresIn: "24h" }
-  );
+    { expiresIn: '24h' }
+  )
 
-  return token;
-};
+  return token
+}
 
-userSchema.pre("save", async function (next) {
-  const user = this;
+userSchema.pre('save', async function (next) {
+  const user = this
 
-  if (user.isModified("password")) {
-    user.password = await bcrypt.hash(user.password, 8);
+  if (user.isModified('password')) {
+    user.password = await bcrypt.hash(user.password, 8)
   }
 
-  next();
-});
+  next()
+})
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model('User', userSchema)
 
-module.exports = User;
+module.exports = User
